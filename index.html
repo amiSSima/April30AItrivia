@@ -51,7 +51,7 @@
   .timer-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
   .timer-track { flex: 1; height: 7px; background: #f0edf8; border-radius: 99px; overflow: hidden; }
   .timer-fill { height: 100%; background: #EE2B74; border-radius: 99px; transition: width 0.25s linear; }
-  .timer-num { font-size: 22px; font-weight: 700; color: #394056; min-width: 32px; text-align: right; }
+  .timer-num { font-size: 22px; font-weight: 700; color: #394056; min-width: 36px; text-align: right; }
   .timer-num.warning { color: #EE2B74; }
 
   .q-text { font-size: 19px; font-weight: 700; color: #394056; line-height: 1.45; margin-bottom: 20px; }
@@ -173,7 +173,7 @@
   .podium-pts { font-size: 12px; color: #999; margin-top: 2px; }
   .final-rest { margin-bottom: 16px; }
 
-  /* ── Multiplayer-specific ── */
+  /* ── Multiplayer ── */
   .room-code-display {
     font-size: 44px; font-weight: 900; color: #EE2B74;
     letter-spacing: 0.2em; text-align: center;
@@ -195,18 +195,57 @@
   }
   .answer-status-box {
     text-align: center; padding: 12px 16px; border-radius: 10px;
-    font-size: 14px; font-weight: 600; margin-top: 10px; min-height: 44px;
+    font-size: 14px; font-weight: 600; margin-top: 10px; min-height: 52px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .join-form { display: flex; flex-direction: column; gap: 14px; }
   .input-label { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: 0.1em; margin-bottom: 5px; }
   .error-text { color: #EE2B74; font-size: 13px; min-height: 18px; }
-  .waiting-icon { font-size: 48px; text-align: center; margin-bottom: 16px; }
   .spinner {
     width: 20px; height: 20px; border: 3px solid #f0edf8;
     border-top-color: #EE2B74; border-radius: 50%;
     animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Robot animations ── */
+  @keyframes spin      { to { transform: rotate(360deg); } }
+  @keyframes roboFloat { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+  @keyframes roboBounce { 0%,100% { transform: translateY(0) scaleY(1); } 40% { transform: translateY(-16px) scaleY(1.05); } 60% { transform: translateY(-14px) scaleY(1.05); } }
+  @keyframes roboShake  { 0%,100% { transform: translateX(0) rotate(0deg); } 15% { transform: translateX(-8px) rotate(-8deg); } 30% { transform: translateX(8px) rotate(8deg); } 45% { transform: translateX(-6px) rotate(-5deg); } 60% { transform: translateX(6px) rotate(5deg); } 75% { transform: translateX(-3px) rotate(-3deg); } }
+  @keyframes roboTada   { 0% { transform: scale(1) rotate(0deg); } 10%,20% { transform: scale(0.9) rotate(-6deg); } 30%,50%,70%,90% { transform: scale(1.2) rotate(6deg); } 40%,60%,80% { transform: scale(1.2) rotate(-6deg); } 100% { transform: scale(1) rotate(0deg); } }
+  @keyframes roboDance  { 0%,100% { transform: rotate(-8deg) scale(1); } 25% { transform: rotate(8deg) scale(1.1) translateY(-4px); } 50% { transform: rotate(-5deg) scale(1.05); } 75% { transform: rotate(5deg) scale(1.1) translateY(-4px); } }
+  @keyframes roboPop    { 0% { transform: scale(0) rotate(-15deg); opacity: 0; } 60% { transform: scale(1.2) rotate(5deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+  @keyframes roboWave   { 0%,100% { transform: rotate(0deg); transform-origin: bottom center; } 25% { transform: rotate(-10deg); transform-origin: bottom center; } 75% { transform: rotate(10deg); transform-origin: bottom center; } }
+  @keyframes confettiFall { 0% { transform: translateY(-30px) rotate(0deg); opacity:1; } 100% { transform: translateY(120px) rotate(720deg); opacity:0; } }
+  @keyframes slideIn { 0% { transform: translateX(-20px); opacity:0; } 100% { transform: translateX(0); opacity:1; } }
+
+  .robo-float  { display:inline-block; animation: roboFloat  2s ease-in-out infinite; }
+  .robo-bounce { display:inline-block; animation: roboBounce 0.7s ease-in-out infinite; }
+  .robo-shake  { display:inline-block; animation: roboShake  0.5s ease forwards; }
+  .robo-tada   { display:inline-block; animation: roboTada   0.6s ease forwards; }
+  .robo-dance  { display:inline-block; animation: roboDance  0.8s ease-in-out infinite; }
+  .robo-pop    { display:inline-block; animation: roboPop    0.4s ease forwards; }
+  .robo-wave   { display:inline-block; animation: roboWave   1s ease-in-out infinite; }
+
+  .robot-hero { font-size: 72px; text-align: center; display: block; margin-bottom: 12px; }
+  .robot-sm   { font-size: 20px; }
+  .robot-md   { font-size: 32px; }
+  .robot-lg   { font-size: 52px; display: block; text-align: center; margin-bottom: 8px; }
+
+  .confetti-row { display:flex; justify-content:center; gap:8px; margin-bottom:8px; overflow:hidden; height:40px; }
+  .confetti-row span { font-size:22px; animation: confettiFall 1.4s ease-in forwards; }
+  .confetti-row span:nth-child(2) { animation-delay:0.1s; }
+  .confetti-row span:nth-child(3) { animation-delay:0.2s; }
+  .confetti-row span:nth-child(4) { animation-delay:0.05s; }
+  .confetti-row span:nth-child(5) { animation-delay:0.15s; }
+  .confetti-row span:nth-child(6) { animation-delay:0.25s; }
+
+  .score-row-new { animation: slideIn 0.3s ease forwards; }
+
+  .timer-robot { font-size: 18px; margin-right: 4px; display: inline-block; transition: animation 0.3s; }
+  .timer-robot.calm   { animation: roboWave 2s ease-in-out infinite; }
+  .timer-robot.hurry  { animation: roboBounce 0.5s ease-in-out infinite; }
+  .timer-robot.panic  { animation: roboShake 0.3s ease-in-out infinite; }
 
   @media (max-width: 500px) {
     .options-grid { grid-template-columns: 1fr; }
@@ -216,6 +255,7 @@
     .btn-row { flex-direction: column; }
     .btn { width: 100%; text-align: center; }
     .room-code-display { font-size: 32px; }
+    .robot-hero { font-size: 52px; }
   }
 </style>
 </head>
@@ -233,11 +273,12 @@
 
   <!-- Landing -->
   <div id="landing-screen" class="screen active">
-    <div class="setup-title">AI Trivia</div>
-    <div class="setup-sub">20 questions · Real-time multiplayer · Up to 50 players</div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px;">
-      <button class="btn btn-pink" style="width:100%;text-align:center;" onclick="showCreateGame()">Host a game</button>
-      <button class="btn btn-navy" style="width:100%;text-align:center;" onclick="showScreen('join-screen')">Join a game</button>
+    <span class="robot-hero robo-float">🤖</span>
+    <div class="setup-title" style="text-align:center;">AI Trivia</div>
+    <div class="setup-sub" style="text-align:center;">20 questions · Real-time multiplayer · Up to 50 players</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+      <button class="btn btn-pink" style="width:100%;text-align:center;" onclick="showCreateGame()">🎮 Host a game</button>
+      <button class="btn btn-navy" style="width:100%;text-align:center;" onclick="showScreen('join-screen')">🙋 Join a game</button>
     </div>
     <div style="margin-top:20px;font-size:12px;color:#bbb;line-height:1.7;text-align:center;">
       Host controls the game · Players join on their own phones<br>
@@ -247,6 +288,10 @@
 
   <!-- Host lobby -->
   <div id="host-lobby-screen" class="screen">
+    <div style="text-align:center;margin-bottom:12px;">
+      <span class="robot-md robo-wave">🤖</span>
+      <span style="font-size:12px;color:#bbb;margin-left:6px;">Waiting for your crew...</span>
+    </div>
     <div class="setup-title">Your Game Room</div>
     <div class="setup-sub">Share this code — players go to this same URL and tap "Join a game"</div>
     <div class="room-code-display" id="host-room-code"><span class="spinner"></span></div>
@@ -276,7 +321,7 @@
       </div>
       <div class="error-text" id="join-error"></div>
       <div class="btn-row">
-        <button class="btn btn-pink" id="join-btn" onclick="joinGame()">Join</button>
+        <button class="btn btn-pink" id="join-btn" onclick="joinGame()">Join 🤖</button>
         <button class="btn btn-outline" onclick="showScreen('landing-screen')">Back</button>
       </div>
     </div>
@@ -284,14 +329,16 @@
 
   <!-- Waiting (player) -->
   <div id="waiting-screen" class="screen">
-    <div class="waiting-icon">⏳</div>
+    <div style="font-size:64px;text-align:center;margin-bottom:12px;">
+      <span class="robo-bounce">🤖</span>
+    </div>
     <div class="setup-title" style="text-align:center;">You're in!</div>
-    <div class="setup-sub" style="text-align:center;">Waiting for the host to start the game...</div>
+    <div class="setup-sub" style="text-align:center;">Your robot is warming up... host will start soon!</div>
     <div style="text-align:center;margin-top:16px;">
       <div class="input-label" style="text-align:center;">ROOM CODE</div>
       <div class="room-code-display" id="waiting-code" style="font-size:30px;margin-top:8px;"></div>
     </div>
-    <div class="section-label" style="margin-top:16px;">PLAYERS JOINED</div>
+    <div class="section-label" style="margin-top:16px;">ROBOTS IN THE ROOM</div>
     <div class="players-tags" id="waiting-players-list"></div>
   </div>
 
@@ -302,8 +349,9 @@
       <div class="progress-label" id="host-prog-label"></div>
     </div>
     <div class="timer-row">
+      <span class="timer-robot calm" id="host-timer-robot">🤖</span>
       <div class="timer-track"><div class="timer-fill" id="host-timer-fill"></div></div>
-      <div class="timer-num" id="host-timer-num">15</div>
+      <div class="timer-num" id="host-timer-num">45</div>
     </div>
     <div class="q-text" id="host-q-text"></div>
     <div class="options-grid" id="host-options-display"></div>
@@ -318,8 +366,9 @@
       <div class="progress-label" id="player-prog-label"></div>
     </div>
     <div class="timer-row">
+      <span class="timer-robot calm" id="player-timer-robot">🤖</span>
       <div class="timer-track"><div class="timer-fill" id="player-timer-fill"></div></div>
-      <div class="timer-num" id="player-timer-num">15</div>
+      <div class="timer-num" id="player-timer-num">45</div>
     </div>
     <div class="q-text" id="player-q-text"></div>
     <div class="options-grid" id="player-options-grid"></div>
@@ -346,18 +395,21 @@
       Next question →
     </button>
     <div id="reveal-waiting-msg" style="font-size:13px;color:#bbb;text-align:center;display:none;">
-      Waiting for host to continue...
+      <span class="robo-bounce" style="font-size:16px;">🤖</span> Waiting for host to continue...
     </div>
   </div>
 
   <!-- Final (shared) -->
   <div id="final-screen" class="screen">
-    <div class="final-title">Game over!</div>
-    <div class="final-sub">Final leaderboard</div>
+    <div class="confetti-row" id="confetti-row">
+      <span>🤖</span><span>⭐</span><span>🤖</span><span>🎉</span><span>🤖</span><span>⭐</span>
+    </div>
+    <div class="final-title" style="text-align:center;">Game over!</div>
+    <div class="final-sub" style="text-align:center;">The robots have spoken 🤖</div>
     <div class="podium" id="final-podium"></div>
     <div class="final-rest" id="final-rest"></div>
-    <div class="btn-row">
-      <button class="btn btn-pink" onclick="location.reload()">Play again</button>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-pink" onclick="location.reload()">🤖 Play again</button>
     </div>
   </div>
 
@@ -394,7 +446,7 @@ const QUESTIONS = [
 
 const AVATAR_COLORS = ["#EE2B74","#394056","#378ADD","#5DA020","#E09020","#D4537E","#7B68EE","#20A090"];
 const LETTERS = ["A","B","C","D"];
-const TIME_LIMIT = 15;
+const TIME_LIMIT = 45;
 const CORRECT_PTS = 100;
 const BONUS_PTS = 200;
 
@@ -492,23 +544,23 @@ async function joinGame() {
   if (!name) { errEl.textContent = 'Please enter your name.'; return; }
 
   btn.disabled = true;
-  btn.textContent = 'Joining...';
+  btn.textContent = 'Joining... 🤖';
 
   const { data: room, error: rErr } = await sb.from('game_rooms').select().eq('room_code', code).maybeSingle();
   if (rErr || !room) {
     errEl.textContent = 'Room not found. Check the code and try again.';
-    btn.disabled = false; btn.textContent = 'Join'; return;
+    btn.disabled = false; btn.textContent = 'Join 🤖'; return;
   }
   if (room.status !== 'lobby') {
     errEl.textContent = 'This game has already started.';
-    btn.disabled = false; btn.textContent = 'Join'; return;
+    btn.disabled = false; btn.textContent = 'Join 🤖'; return;
   }
 
   const { data: existing } = await sb.from('players').select().eq('room_id', room.id).eq('name', name).maybeSingle();
   let player = existing;
   if (!player) {
     const { data: newP, error: pErr } = await sb.from('players').insert({ room_id: room.id, name, score: 0 }).select().single();
-    if (pErr) { errEl.textContent = 'Error joining. Try again.'; btn.disabled = false; btn.textContent = 'Join'; return; }
+    if (pErr) { errEl.textContent = 'Error joining. Try again.'; btn.disabled = false; btn.textContent = 'Join 🤖'; return; }
     player = newP;
   }
 
@@ -641,10 +693,10 @@ async function submitAnswer(chosen) {
   const statusEl = document.getElementById('answer-status');
   if (isCorrect) {
     statusEl.style.cssText = 'background:#EDF7E3;color:#2d5e10;';
-    statusEl.textContent = '✓ Correct! Waiting for reveal...';
+    statusEl.innerHTML = '<span class="robo-tada" style="font-size:24px;">🤖</span> <span>Correct! Waiting for reveal...</span>';
   } else {
     statusEl.style.cssText = 'background:#FEEBEB;color:#8a2020;';
-    statusEl.textContent = '✗ Wrong answer. Waiting for reveal...';
+    statusEl.innerHTML = '<span class="robo-shake" style="font-size:24px;">🤖</span> <span>Wrong answer. Waiting for reveal...</span>';
   }
 
   const { error } = await sb.from('answers').upsert({
@@ -666,7 +718,19 @@ async function submitAnswer(chosen) {
 
 // ── Timer ──────────────────────────────────────────────────
 
-function startTimer(startedAt, fillId, numId, onExpire) {
+function updateTimerRobot(robotId, remaining) {
+  const el = document.getElementById(robotId);
+  if (!el) return;
+  if (remaining > 20) {
+    el.className = 'timer-robot calm';
+  } else if (remaining > 10) {
+    el.className = 'timer-robot hurry';
+  } else {
+    el.className = 'timer-robot panic';
+  }
+}
+
+function startTimer(startedAt, fillId, numId, robotId, onExpire) {
   clearTimer();
   const startMs = new Date(startedAt).getTime();
 
@@ -678,8 +742,9 @@ function startTimer(startedAt, fillId, numId, onExpire) {
     if (fillEl) fillEl.style.width = (remaining / TIME_LIMIT * 100) + '%';
     if (numEl) {
       numEl.textContent = Math.ceil(remaining);
-      numEl.className = 'timer-num' + (remaining <= 5 ? ' warning' : '');
+      numEl.className = 'timer-num' + (remaining <= 10 ? ' warning' : '');
     }
+    updateTimerRobot(robotId, remaining);
     if (remaining <= 0) { clearTimer(); onExpire(); }
   }
   tick();
@@ -691,9 +756,9 @@ function startTimer(startedAt, fillId, numId, onExpire) {
 function renderLobbyPlayers() {
   const n = G.players.length;
   document.getElementById('lobby-player-count').textContent =
-    n === 0 ? 'Waiting for players to join...' : `${n} player${n !== 1 ? 's' : ''} joined`;
+    n === 0 ? 'Waiting for robots to join...' : `${n} robot${n !== 1 ? 's' : ''} ready to play!`;
   document.getElementById('lobby-players-list').innerHTML = G.players.map(p =>
-    `<div class="player-tag">${avatarEl(p.name, 24)} ${p.name}</div>`
+    `<div class="player-tag"><span style="font-size:14px;">🤖</span> ${p.name}</div>`
   ).join('');
   document.getElementById('start-game-btn').disabled = n < 1;
 }
@@ -706,7 +771,7 @@ function showWaiting() {
 
 function renderWaitingPlayers() {
   document.getElementById('waiting-players-list').innerHTML = G.players.map(p =>
-    `<div class="player-tag">${avatarEl(p.name, 24)} ${p.name}</div>`
+    `<div class="player-tag"><span style="font-size:14px;">🤖</span> ${p.name}</div>`
   ).join('');
 }
 
@@ -723,14 +788,16 @@ function renderHostQuestion(qIdx, startedAt) {
     </div>`
   ).join('');
   showScreen('host-question-screen');
-  startTimer(startedAt, 'host-timer-fill', 'host-timer-num', doReveal);
+  startTimer(startedAt, 'host-timer-fill', 'host-timer-num', 'host-timer-robot', doReveal);
 }
 
 function updateHostAnswerCount() {
   const count = G.answers.length;
+  const total = G.players.length;
   const el = document.getElementById('host-answer-count');
-  if (el) el.textContent = count + ' / ' + G.players.length + ' answered';
-  if (count >= G.players.length && G.players.length > 0 && !G.revealing) doReveal();
+  if (el) el.textContent = count + ' / ' + total + ' answered';
+  // Auto-reveal as soon as everyone has answered
+  if (count >= total && total > 0 && !G.revealing) doReveal();
 }
 
 function renderPlayerQuestion(qIdx, startedAt) {
@@ -755,11 +822,13 @@ function renderPlayerQuestion(qIdx, startedAt) {
   });
 
   showScreen('player-question-screen');
-  startTimer(startedAt, 'player-timer-fill', 'player-timer-num', () => {
-    // Timer expired for player — just disable buttons, host will reveal
+  startTimer(startedAt, 'player-timer-fill', 'player-timer-num', 'player-timer-robot', () => {
     document.querySelectorAll('#player-options-grid .option-btn').forEach(b => b.disabled = true);
     const s = document.getElementById('answer-status');
-    if (!G.hasAnswered) { s.style.cssText = 'background:#f4f2f8;color:#bbb;'; s.textContent = 'Time\'s up! Waiting for reveal...'; }
+    if (!G.hasAnswered) {
+      s.style.cssText = 'background:#f4f2f8;color:#bbb;';
+      s.innerHTML = '<span class="robo-shake" style="font-size:20px;">🤖</span> <span>Time\'s up! Waiting for reveal...</span>';
+    }
   });
 }
 
@@ -774,8 +843,11 @@ function renderReveal(qIdx) {
   document.getElementById('reveal-scores').innerHTML = sorted.map((p, i) => {
     const ans = G.answers.find(a => a.player_id === p.id);
     const pts = ans?.points || 0;
-    return `<div class="score-row">
-      ${avatarEl(p.name)}
+    const isFirst = pts >= CORRECT_PTS + BONUS_PTS;
+    return `<div class="score-row score-row-new" style="animation-delay:${i * 0.08}s">
+      ${isFirst
+        ? `<span class="robo-tada" style="font-size:20px;margin-right:8px;">🤖</span>`
+        : `<span style="font-size:20px;margin-right:8px;opacity:0.4;">🤖</span>`}
       <span class="score-name">${p.name}</span>
       ${pts > 0 ? `<span class="score-delta">+${pts}</span>` : ''}
       <span class="score-total">${p.score}</span>
@@ -791,16 +863,29 @@ function renderReveal(qIdx) {
 function renderFinal() {
   const sorted = [...G.players].sort((a, b) => b.score - a.score);
   const trophies = ['🥇','🥈','🥉'];
+  const podiumRobots = ['robo-dance','robo-bounce','robo-wave'];
+
   document.getElementById('final-podium').innerHTML = sorted.slice(0, 3).map((p, i) =>
     `<div class="podium-card podium-${i+1}">
-      <div class="podium-trophy">${trophies[i]}</div>
+      <div class="podium-trophy"><span class="${podiumRobots[i]}" style="font-size:32px;display:inline-block;">🤖</span></div>
+      <div style="font-size:18px;margin-bottom:4px;">${trophies[i]}</div>
       <div class="podium-name">${p.name}</div>
       <div class="podium-pts">${p.score} pts</div>
     </div>`
   ).join('');
+
   document.getElementById('final-rest').innerHTML = sorted.slice(3).map(p =>
-    `<div class="score-row">${avatarEl(p.name)}<span class="score-name">${p.name}</span><span class="score-total">${p.score}</span></div>`
+    `<div class="score-row">
+      <span style="font-size:18px;margin-right:8px;">🤖</span>
+      <span class="score-name">${p.name}</span>
+      <span class="score-total">${p.score}</span>
+    </div>`
   ).join('');
+
+  // Re-trigger confetti animation
+  const row = document.getElementById('confetti-row');
+  row.innerHTML = row.innerHTML;
+
   showScreen('final-screen');
 }
 </script>
