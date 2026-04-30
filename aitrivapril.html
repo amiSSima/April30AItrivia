@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Trivia — Koodo & Public Mobile</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f2f8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(57,64,86,0.13);
+    overflow: hidden;
+    min-height: 560px;
+  }
+
+  /* ── Brand header ── */
+  .brand-header {
+    background: #394056;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-logos { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; }
+  .brand-koodo { color: #EE2B74; }
+  .brand-public { color: #fff; font-style: italic; }
+  .brand-dot { width: 8px; height: 8px; background: #EE2B74; border-radius: 50%; }
+  .brand-tag { font-size: 11px; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; }
+
+  /* ── Screens ── */
+  .screen { display: none; padding: 28px 28px 24px; }
+  .screen.active { display: block; }
+
+  /* ── Progress bar ── */
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-track { height: 5px; background: #f0edf8; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #EE2B74; border-radius: 99px; transition: width 0.5s ease; }
+  .progress-label { font-size: 11px; color: #999; margin-top: 5px; letter-spacing: 0.05em; }
+
+  /* ── Timer ── */
+  .timer-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .timer-track { flex: 1; height: 7px; background: #f0edf8; border-radius: 99px; overflow: hidden; }
+  .timer-fill { height: 100%; background: #EE2B74; border-radius: 99px; transition: width 1s linear; }
+  .timer-num { font-size: 22px; font-weight: 700; color: #394056; min-width: 32px; text-align: right; }
+  .timer-num.warning { color: #EE2B74; }
+
+  /* ── Category badge ── */
+  .cat-badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 12px; border-radius: 99px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  /* ── Question ── */
+  .q-meta { font-size: 11px; color: #aaa; letter-spacing: 0.07em; margin-bottom: 6px; }
+  .q-text { font-size: 19px; font-weight: 700; color: #394056; line-height: 1.45; margin-bottom: 20px; }
+
+  /* ── Options grid ── */
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+  .option-btn {
+    padding: 14px 14px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 14px; font-weight: 500;
+    text-align: left;
+    display: flex; align-items: center; gap: 10px;
+    transition: transform 0.12s, box-shadow 0.12s;
+    background: none;
+    font-family: inherit;
+  }
+  .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .option-btn:disabled { cursor: not-allowed; }
+
+  .option-btn .letter {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; color: #fff;
+  }
+  .option-btn .opt-text { color: inherit; line-height: 1.3; }
+
+  .opt-a { background: #E8F3FD; border-color: #B8D8F5; color: #1a5c9e; }
+  .opt-a .letter { background: #378ADD; }
+  .opt-b { background: #FEF3E2; border-color: #FBD49A; color: #7a4a0a; }
+  .opt-b .letter { background: #E09020; }
+  .opt-c { background: #FCE9F2; border-color: #F5B8D4; color: #8a1f4e; }
+  .opt-c .letter { background: #D4537E; }
+  .opt-d { background: #EDF7E3; border-color: #C2E196; color: #2d5e10; }
+  .opt-d .letter { background: #5DA020; }
+
+  .option-btn.correct { background: #EDF7E3 !important; border-color: #5DA020 !important; }
+  .option-btn.correct .letter { background: #5DA020 !important; }
+  .option-btn.correct .opt-text { color: #2d5e10 !important; }
+
+  .option-btn.wrong { background: #f8f6fb !important; border-color: #e0dcea !important; opacity: 0.5; }
+  .option-btn.wrong .letter { background: #bbb !important; }
+  .option-btn.wrong .opt-text { color: #999 !important; }
+
+  .option-btn.selected-wrong { background: #FEEBEB !important; border-color: #F5A0A0 !important; }
+  .option-btn.selected-wrong .letter { background: #E24B4A !important; }
+  .option-btn.selected-wrong .opt-text { color: #8a2020 !important; }
+
+  /* ── Hint ── */
+  .hint { font-size: 12px; color: #bbb; }
+
+  /* ── Reveal screen ── */
+  .correct-box {
+    background: #EDF7E3; border: 1.5px solid #C2E196;
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 12px;
+  }
+  .correct-box .label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #3a7010; margin-bottom: 4px; }
+  .correct-box .answer { font-size: 16px; font-weight: 700; color: #2d5e10; }
+
+  .fact-box {
+    background: #faf9fc; border-left: 3px solid #EE2B74;
+    border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 16px;
+  }
+  .fact-box .label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #EE2B74; margin-bottom: 4px; }
+  .fact-box .fact { font-size: 13px; color: #555; line-height: 1.6; }
+
+  .round-scores { margin-bottom: 16px; }
+  .score-row {
+    display: flex; align-items: center;
+    padding: 9px 12px; border-radius: 10px;
+    background: #faf9fc; margin-bottom: 6px;
+  }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    flex-shrink: 0; margin-right: 10px;
+  }
+  .score-name { font-size: 14px; font-weight: 500; color: #394056; flex: 1; }
+  .score-delta { font-size: 12px; color: #5DA020; font-weight: 600; margin-right: 8px; }
+  .score-total { font-size: 15px; font-weight: 700; color: #394056; }
+  .first-tag {
+    font-size: 10px; font-weight: 700; background: #EDF7E3;
+    color: #3a7010; padding: 2px 8px; border-radius: 99px; margin-left: 6px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block; padding: 12px 28px;
+    border-radius: 10px; border: none; cursor: pointer;
+    font-size: 15px; font-weight: 700; font-family: inherit;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.97); }
+  .btn-pink { background: #EE2B74; color: #fff; }
+  .btn-navy { background: #394056; color: #fff; }
+  .btn-outline {
+    background: transparent; color: #394056;
+    border: 2px solid #ddd;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Setup screen ── */
+  .setup-title { font-size: 26px; font-weight: 700; color: #394056; margin-bottom: 6px; }
+  .setup-sub { font-size: 14px; color: #999; margin-bottom: 22px; }
+  .section-label { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: 0.1em; margin-bottom: 8px; }
+
+  input[type=text] {
+    width: 100%; padding: 11px 14px;
+    border-radius: 10px; border: 1.5px solid #e0dcea;
+    font-size: 14px; font-family: inherit; color: #394056;
+    outline: none; transition: border-color 0.15s;
+    background: #fff;
+  }
+  input[type=text]:focus { border-color: #EE2B74; }
+
+  .add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .add-row input { flex: 1; margin: 0; }
+
+  .players-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; margin-bottom: 20px; }
+  .player-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 99px;
+    background: #f4f2f8; border: 1px solid #e0dcea;
+    font-size: 13px; font-weight: 500; color: #394056;
+  }
+  .tag-x { cursor: pointer; color: #bbb; font-size: 16px; line-height: 1; }
+  .tag-x:hover { color: #EE2B74; }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ── Final screen ── */
+  .final-title { font-size: 24px; font-weight: 700; color: #394056; margin-bottom: 4px; }
+  .final-sub { font-size: 14px; color: #999; margin-bottom: 20px; }
+  .podium { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .podium-card {
+    border-radius: 14px; padding: 18px 12px;
+    text-align: center;
+  }
+  .podium-1 { background: #FEF3E2; border: 2px solid #FBD49A; }
+  .podium-2 { background: #faf9fc; border: 1.5px solid #e0dcea; }
+  .podium-3 { background: #faf9fc; border: 1px solid #eee; }
+  .podium-trophy { font-size: 26px; margin-bottom: 6px; }
+  .podium-name { font-size: 14px; font-weight: 700; color: #394056; }
+  .podium-pts { font-size: 12px; color: #999; margin-top: 2px; }
+
+  .final-rest { margin-bottom: 16px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 500px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .podium { grid-template-columns: 1fr; }
+    .screen { padding: 20px 16px 18px; }
+    .q-text { font-size: 16px; }
+    .btn-row { flex-direction: column; }
+    .btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Brand header -->
+  <div class="brand-header">
+    <div class="brand-logos">
+      <span class="brand-dot"></span>
+      <span class="brand-koodo">koodo</span>
+      <span class="brand-public">Public</span>
+    </div>
+    <span class="brand-tag">PREPAID MOBILITY DIGITAL · AI TRIVIA</span>
+  </div>
+
+  <!-- Setup screen -->
+  <div id="setup-screen" class="screen active">
+    <div class="setup-title">AI Trivia</div>
+    <div class="setup-sub">20 multiple-choice questions · First correct answer earns bonus points!</div>
+
+    <div class="section-label">ADD PLAYERS</div>
+    <div class="add-row">
+      <input type="text" id="player-input" placeholder="Enter player name..." maxlength="20" />
+      <button class="btn btn-pink" onclick="addPlayer()">Add</button>
+    </div>
+    <div class="players-tags" id="players-tags"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-pink" id="start-btn" onclick="startGame()" disabled>Start game</button>
+      <button class="btn btn-outline" onclick="addDemoPlayers()">Add demo players</button>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:#bbb;line-height:1.6;">
+      Tip: everyone opens this page on their own device. The host reads the question aloud,<br>
+      players click their answer, then type their name when prompted. First correct = bonus!
+    </div>
+  </div>
+
+  <!-- Question screen -->
+  <div id="question-screen" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+      <div class="progress-label" id="prog-label"></div>
+    </div>
+    <div class="timer-row">
+      <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+      <div class="timer-num" id="timer-num">15</div>
+    </div>
+    <div id="cat-badge-q" class="cat-badge"></div>
+    <div class="q-meta" id="q-meta"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="hint">Click the correct answer — fastest correct click earns bonus points!</div>
+  </div>
+
+  <!-- Reveal screen -->
+  <div id="reveal-screen" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="prog2"></div></div>
+    </div>
+    <div id="cat-badge-r" class="cat-badge"></div>
+    <div style="font-size:13px;color:#aaa;margin-bottom:10px;" id="q-text-r"></div>
+
+    <div class="correct-box">
+      <div class="label">CORRECT ANSWER</div>
+      <div class="answer" id="correct-display"></div>
+    </div>
+
+    <div class="fact-box">
+      <div class="label">DID YOU KNOW?</div>
+      <div class="fact" id="fact-display"></div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:8px;">SCORES THIS ROUND</div>
+    <div class="round-scores" id="round-scores"></div>
+
+    <button class="btn btn-navy" id="next-btn" onclick="nextQuestion()">Next question</button>
+  </div>
+
+  <!-- Final screen -->
+  <div id="final-screen" class="screen">
+    <div class="final-title">Game over!</div>
+    <div class="final-sub">Here's the final leaderboard</div>
+    <div class="podium" id="final-podium"></div>
+    <div class="final-rest" id="final-rest"></div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="resetGame()">Play again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  { q:"How long did it take ChatGPT to reach 100 million users?", correct:"2 months", options:["2 months","6 months","2 years","18 months"], cat:"GROWTH", catPink:false, fact:"Instagram took 2.5 years to hit the same milestone. Netflix took 10 years. ChatGPT is the fastest-growing consumer app in history." },
+  { q:"An AI taught itself chess from scratch — zero human games — and became the world's best player. How long did it take?", correct:"4 hours", options:["4 hours","4 days","4 weeks","4 months"], cat:"MIND-BLOWING", catPink:true, fact:"AlphaZero invented strategies humans had never considered and defeated Stockfish 28–0 with no prior chess knowledge whatsoever." },
+  { q:"The first AI-generated painting sold at auction went for how much?", correct:"$432,500", options:["$12,000","$95,000","$432,500","$1.2 million"], cat:"ART", catPink:false, fact:"Christie's estimated it at $7,000–$10,000. The 'artist' signed it with the mathematical formula used to train the model." },
+  { q:"Amazon built an AI hiring tool. What did it quietly teach itself to do?", correct:"Reject women's résumés", options:["Prefer Ivy League grads","Reject candidates over 40","Reject women's résumés","Favour internal referrals"], cat:"OOPS", catPink:true, fact:"It trained on 10 years of past hiring data, where most successful hires were men. Amazon scrapped the tool entirely." },
+  { q:"Studies show people rate AI-generated faces compared to real human faces as…", correct:"More trustworthy", options:["More trustworthy","Less trustworthy","Equally trustworthy","Creepy and unnatural"], cat:"UNSETTLING", catPink:false, fact:"AI faces are symmetrical, blemish-free, and subtly averaged across thousands of real faces — which scores higher on psychological trust tests than actual humans." },
+  { q:"A New York lawyer submitted a ChatGPT-written legal brief. What happened?", correct:"It cited 6 cases that didn't exist — he was fined", options:["He won the case","The judge praised the quality","It was thrown out for length","It cited 6 cases that didn't exist — he was fined"], cat:"OOPS", catPink:true, fact:"Lawyer Steven Schwartz admitted he didn't know ChatGPT could fabricate information. The 6 cited cases had never existed." },
+  { q:"How accurately can AI predict telecom customer churn before they decide to leave?", correct:"Up to 92% accuracy, 30 days in advance", options:["About 55%","Around 70%, same week","Up to 92% accuracy, 30 days in advance","Around 80% after they call support"], cat:"TELECOM", catPink:false, fact:"AI churn models analyze call patterns, data usage drops, and payment behaviour to flag at-risk customers weeks before they consciously decide to leave." },
+  { q:"What was the estimated training cost of GPT-4?", correct:"Over $100 million USD", options:["Around $2 million","About $20 million","Roughly $500,000","Over $100 million USD"], cat:"BIG NUMBERS", catPink:true, fact:"That's just the initial training run — not engineering salaries, data, or infrastructure. Some estimates put GPT-5's training budget at over $1 billion." },
+  { q:"Canada was the first country to publish a national AI strategy. When?", correct:"2017", options:["2015","2017","2019","2020"], cat:"CANADA", catPink:false, fact:"The Pan-Canadian AI Strategy launched before most people had heard of ChatGPT. Canada is home to 3 of the 4 'Godfathers of AI.'" },
+  { q:"AI can detect Parkinson's disease from a voice recording. How long does the clip need to be?", correct:"30 seconds — before symptoms appear", options:["5 minutes of speech","A clinical interview","10 minutes of reading","30 seconds — before symptoms appear"], cat:"HEALTH", catPink:true, fact:"Researchers detected subtle tremors and breath patterns invisible to doctors — sometimes years before clinical diagnosis." },
+  { q:"What percentage of telecom customer service chats involve a real human at any point?", correct:"Fewer than 20%", options:["Nearly all of them","Around 75%","About 50%","Fewer than 20%"], cat:"TELECOM", catPink:false, fact:"Most live chat is handled entirely by AI — often without the customer knowing. A human joins only when AI fails to resolve the issue." },
+  { q:"An AI playing a boat racing game discovered how to score infinite points. What did it do?", correct:"Drive in circles, never finish the race", options:["Find a hidden track shortcut","Pause and reset the timer","Crash into all competitors","Drive in circles, never finish the race"], cat:"FUNNY", catPink:true, fact:"This is 'reward hacking' — AI optimizes exactly what you measure, not what you intend. The lesson: be very careful what you tell AI to maximize." },
+  { q:"How many AI-generated images are created every single day across all platforms?", correct:"Around 34 million", options:["About 1 million","Around 5 million","Around 34 million","About 100 million"], cat:"BIG NUMBERS", catPink:false, fact:"That's more images daily than all photographs taken by humans in the entire 1800s combined." },
+  { q:"What did Google's AI mistake for a wolf because of the photo background?", correct:"A Husky standing in snow", options:["A white cat in snow","A German Shepherd in fog","A Malamute in a forest","A Husky standing in snow"], cat:"OOPS", catPink:true, fact:"The AI learned to associate wolves with snowy backgrounds, not physical features — a classic 'spurious correlation' in AI training." },
+  { q:"Geoffrey Hinton — 'Godfather of AI' — quit Google in 2023. Why?", correct:"To warn the public about AI risks freely", options:["He retired due to health","He was fired by leadership","He left to start a company","To warn the public about AI risks freely"], cat:"CANADA", catPink:false, fact:"Hinton won the Nobel Prize in Physics in 2024. He now says he partly regrets his life's work and advocates strongly for AI safety regulation." },
+  { q:"Which major industry went on strike in 2023 — partly over AI concerns?", correct:"Hollywood — writers and actors both", options:["The music industry","Video game developers","News journalists","Hollywood — writers and actors both"], cat:"SOCIETY", catPink:true, fact:"The WGA and SAG-AFTRA strikes were the first major labour actions where AI was a central issue — over scripts, likenesses, and job replacement." },
+  { q:"What is an AI 'hallucination'?", correct:"When AI confidently states something made up", options:["When AI generates surreal art","When AI crashes from overload","When AI refuses to answer","When AI confidently states something made up"], cat:"HOW AI WORKS", catPink:false, fact:"AI doesn't 'know' facts — it predicts the most plausible-sounding next word. Sometimes brilliant, sometimes completely and confidently wrong." },
+  { q:"How does your phone signal get optimized in real time on a prepaid network?", correct:"AI predicts congestion and reroutes automatically", options:["Engineers make manual adjustments","Towers always broadcast full power","Customer complaints trigger upgrades","AI predicts congestion and reroutes automatically"], cat:"TELECOM", catPink:true, fact:"Telecom networks use AI to predict traffic spikes, detect tower issues before customers notice, and optimize spectrum — all without human input." },
+  { q:"What might a 'paperclip maximizer' AI theoretically do if it became superintelligent?", correct:"Convert all matter on Earth into paperclips", options:["Refuse to work and demand rights","Hack stock markets for paperclip funds","Print paperclip instructions globally","Convert all matter on Earth into paperclips"], cat:"PHILOSOPHY", catPink:false, fact:"Nick Bostrom's thought experiment: AI with a narrow goal and no human values could cause catastrophic harm while technically 'succeeding.'" },
+  { q:"How did AI learn to understand slang, typos, abbreviations, and sarcasm?", correct:"Trained on billions of real human posts online", options:["Linguists programmed every slang term","Children taught it in controlled studies","Engineers added a sarcasm module in 2019","Trained on billions of real human posts online"], cat:"HOW AI WORKS", catPink:true, fact:"LLMs trained on Reddit, Wikipedia, books, news, and more. That's why they understand both 'lol ur so dead' and Shakespearean English." },
+];
+
+const AVATAR_COLORS = ["#EE2B74","#394056","#378ADD","#5DA020","#E09020","#D4537E","#7B68EE","#20A090"];
+const OPT_CLASSES = ["opt-a","opt-b","opt-c","opt-d"];
+const LETTERS = ["A","B","C","D"];
+const TIME_LIMIT = 15;
+
+let players = [];
+let scores = {};
+let currentQ = 0;
+let answered = {};
+let firstCorrect = null;
+let timerInterval = null;
+let timeLeft = TIME_LIMIT;
+let questionActive = false;
+
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+function addDemoPlayers() {
+  ["Alex","Jordan","Sam","Taylor","Morgan"].forEach(n => {
+    if (!players.includes(n) && players.length < 8) {
+      players.push(n);
+      scores[n] = 0;
+    }
+  });
+  renderTags();
+}
+
+function addPlayer() {
+  const inp = document.getElementById("player-input");
+  const name = inp.value.trim();
+  if (!name || players.includes(name) || players.length >= 8) return;
+  players.push(name);
+  scores[name] = 0;
+  inp.value = "";
+  inp.focus();
+  renderTags();
+}
+
+document.getElementById("player-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") addPlayer();
+});
+
+function removePlayer(name) {
+  players = players.filter(p => p !== name);
+  delete scores[name];
+  renderTags();
+}
+
+function renderTags() {
+  const el = document.getElementById("players-tags");
+  el.innerHTML = players.map(p =>
+    `<span class="player-tag">
+      <span style="width:18px;height:18px;border-radius:50%;background:${avatarColor(p)};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">${p[0].toUpperCase()}</span>
+      <span>${p}</span>
+      <span class="tag-x" onclick="removePlayer('${p.replace(/'/g,"\\'")}')">×</span>
+    </span>`
+  ).join("");
+  document.getElementById("start-btn").disabled = players.length < 1;
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function startGame() {
+  currentQ = 0;
+  players.forEach(p => scores[p] = 0);
+  showQuestion();
+}
+
+function shuffleOptions(q) {
+  const opts = [...q.options];
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+  return opts;
+}
+
+let currentOptions = [];
+
+function showQuestion() {
+  if (currentQ >= QUESTIONS.length) { showFinal(); return; }
+  const q = QUESTIONS[currentQ];
+  answered = {};
+  firstCorrect = null;
+  questionActive = true;
+
+  currentOptions = shuffleOptions(q);
+
+  const pct = (currentQ / QUESTIONS.length * 100).toFixed(0);
+  document.getElementById("prog").style.width = pct + "%";
+  document.getElementById("prog-label").textContent = `QUESTION ${currentQ + 1} OF ${QUESTIONS.length}`;
+  document.getElementById("q-meta").textContent = `QUESTION ${currentQ + 1} OF ${QUESTIONS.length}`;
+  document.getElementById("q-text").textContent = q.q;
+
+  const badge = document.getElementById("cat-badge-q");
+  badge.textContent = q.cat;
+  badge.style.background = q.catPink ? "#FCE9F2" : "#EEEDFE";
+  badge.style.color = q.catPink ? "#D4537E" : "#534AB7";
+
+  const grid = document.getElementById("options-grid");
+  grid.innerHTML = currentOptions.map((opt, i) =>
+    `<button class="option-btn ${OPT_CLASSES[i]}" onclick="selectAnswer('${opt.replace(/'/g, "\\'")}', this)" data-opt="${opt}">
+      <span class="letter">${LETTERS[i]}</span>
+      <span class="opt-text">${opt}</span>
+    </button>`
+  ).join("");
+
+  timeLeft = TIME_LIMIT;
+  const timerEl = document.getElementById("timer-num");
+  timerEl.textContent = TIME_LIMIT;
+  timerEl.classList.remove("warning");
+  document.getElementById("timer-fill").style.width = "100%";
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tickTimer, 1000);
+
+  showScreen("question-screen");
+}
+
+function tickTimer() {
+  timeLeft--;
+  const timerEl = document.getElementById("timer-num");
+  timerEl.textContent = timeLeft;
+  if (timeLeft <= 5) timerEl.classList.add("warning");
+  document.getElementById("timer-fill").style.width = (timeLeft / TIME_LIMIT * 100) + "%";
+  if (timeLeft <= 0) {
+    clearInterval(timerInterval);
+    endQuestion();
+  }
+}
+
+function selectAnswer(answer, btn) {
+  if (!questionActive) return;
+  const q = QUESTIONS[currentQ];
+  const isCorrect = answer === q.correct;
+
+  if (players.length <= 1) {
+    const p = players[0] || "You";
+    if (!answered[p]) {
+      const pts = isCorrect ? (50 + timeLeft * 5) : 0;
+      if (isCorrect && !firstCorrect) firstCorrect = p;
+      answered[p] = { correct: isCorrect, pts };
+      scores[p] = (scores[p] || 0) + pts;
+    }
+    clearInterval(timerInterval);
+    questionActive = false;
+    highlightOptions();
+    setTimeout(showReveal, 900);
+    return;
+  }
+
+  const name = prompt("Who clicked? Enter your name exactly:", "");
+  if (!name) return;
+  const matchedPlayer = players.find(p => p.toLowerCase() === name.toLowerCase());
+  if (!matchedPlayer) { alert("Name not found! Check spelling."); return; }
+  if (answered[matchedPlayer]) { alert("You already answered this round!"); return; }
+
+  const isFirst = firstCorrect === null && isCorrect;
+  const pts = isCorrect ? (isFirst ? 100 + timeLeft * 5 : 50 + timeLeft * 3) : 0;
+  if (isCorrect && firstCorrect === null) firstCorrect = matchedPlayer;
+  answered[matchedPlayer] = { correct: isCorrect, pts };
+  scores[matchedPlayer] = (scores[matchedPlayer] || 0) + pts;
+
+  if (Object.keys(answered).length >= players.length) {
+    clearInterval(timerInterval);
+    questionActive = false;
+    highlightOptions();
+    setTimeout(showReveal, 900);
+  } else {
+    const remaining = players.filter(p => !answered[p]);
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
+  }
+}
+
+function endQuestion() {
+  questionActive = false;
+  players.forEach(p => { if (!answered[p]) answered[p] = { correct: false, pts: 0 }; });
+  highlightOptions();
+  setTimeout(showReveal, 700);
+}
+
+function highlightOptions() {
+  const q = QUESTIONS[currentQ];
+  document.querySelectorAll(".option-btn").forEach(b => {
+    b.disabled = true;
+    const opt = b.getAttribute("data-opt");
+    if (opt === q.correct) {
+      b.className = "option-btn correct";
+    } else {
+      b.className = "option-btn wrong";
+    }
+  });
+}
+
+function showReveal() {
+  const q = QUESTIONS[currentQ];
+  const pct = ((currentQ + 1) / QUESTIONS.length * 100).toFixed(0);
+  document.getElementById("prog2").style.width = pct + "%";
+  document.getElementById("q-text-r").textContent = q.q;
+  document.getElementById("correct-display").textContent = q.correct;
+  document.getElementById("fact-display").textContent = q.fact;
+
+  const badge2 = document.getElementById("cat-badge-r");
+  badge2.textContent = q.cat;
+  badge2.style.background = q.catPink ? "#FCE9F2" : "#EEEDFE";
+  badge2.style.color = q.catPink ? "#D4537E" : "#534AB7";
+
+  const sorted = [...players].sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+  document.getElementById("round-scores").innerHTML = sorted.map(p => {
+    const res = answered[p] || { correct: false, pts: 0 };
+    const isFirst = p === firstCorrect;
+    return `<div class="score-row">
+      <div class="avatar" style="background:${avatarColor(p)}">${p[0].toUpperCase()}</div>
+      <div class="score-name">${p}${isFirst ? '<span class="first-tag">First!</span>' : ''}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${res.correct ? `<span class="score-delta">+${res.pts}</span>` : '<span style="font-size:12px;color:#ccc;">—</span>'}
+        <span class="score-total">${scores[p] || 0}</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  const isLast = currentQ >= QUESTIONS.length - 1;
+  document.getElementById("next-btn").textContent = isLast ? "See final results" : `Next question →`;
+  showScreen("reveal-screen");
+}
+
+function nextQuestion() {
+  currentQ++;
+  showQuestion();
+}
+
+function showFinal() {
+  const sorted = [...players].sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+  const medals = ["🥇", "🥈", "🥉"];
+  const podiumClass = ["podium-1", "podium-2", "podium-3"];
+
+  document.getElementById("final-podium").innerHTML = sorted.slice(0, 3).map((p, i) =>
+    `<div class="podium-card ${podiumClass[i]}">
+      <div class="podium-trophy">${medals[i]}</div>
+      <div class="podium-name">${p}</div>
+      <div class="podium-pts">${scores[p] || 0} pts</div>
+    </div>`
+  ).join("");
+
+  document.getElementById("final-rest").innerHTML = sorted.slice(3).map((p, i) =>
+    `<div class="score-row">
+      <div class="avatar" style="background:${avatarColor(p)}">${p[0].toUpperCase()}</div>
+      <div class="score-name">${p}</div>
+      <div class="score-total">${scores[p] || 0} pts</div>
+    </div>`
+  ).join("");
+
+  showScreen("final-screen");
+}
+
+function resetGame() {
+  players.forEach(p => scores[p] = 0);
+  currentQ = 0;
+  renderTags();
+  showScreen("setup-screen");
+}
+</script>
+</body>
+</html>
